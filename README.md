@@ -17,6 +17,7 @@ my stab at a preprocessing z compensation
 advantages: correct visualization in AXIS, uses saved intermediate results..
 disadvantages: first moves not adjusted (when not all coordinates were used yet)..watch out..this is really just for compensating a bumpy pcb,
 you must start out above it), for heavy terrain, use the HAL stuff. no support for anything beyond g0/g1, this wont adjust your drill files
+comments on move lines are not preserved. this is getting beyond the sanity limits of this regex parser.
 
 (?)use the function in scan-function.ngc to create a heights file (filename.txt probably in your config dir/home dir) (todo, edit and use scan-surface.ngc instead)
 then run the script on that and your g-code file

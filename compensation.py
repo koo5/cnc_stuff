@@ -160,12 +160,12 @@ class Compensation :
 				tmp_mode = m.group(1)
 				if re.match('^0*20$', tmp_mode):
 					unit = "inch"
-					to_mm = 1/mmsininch
+					conv = mmsininch
 					print l
 					continue
 				elif re.match('^0*21$', tmp_mode):
 					unit = "mm"
-					to_mm = 1
+					conv = 1
 					print l
 					continue
 			
@@ -177,15 +177,22 @@ class Compensation :
 			m = re.match('.*[xX]\s*(-?\d+(\.\d+)?)', l)
 			if m:
 				is_move = 1
-				cur_x = float(m.group(1))*to_mm
+				cur_x = float(m.group(1))*conv
 			m = re.match('.*[yY]\s*(-?\d+(\.\d+)?)', l)
 			if m:
 				is_move = 1
-				cur_y = float(m.group(1))*to_mm
+				cur_y = float(m.group(1))*conv
 			m = re.match('.*[zZ]\s*(-?\d+(\.\d+)?)', l)
 			if m:
 				is_move = 1
-				cur_z = float(m.group(1))*to_mm
+				cur_z = float(m.group(1))*conv
+			m = re.match('.*[fF]\s*(-?\d+(\.\d+)?)', l)
+			if m:
+				if not is_move:
+					print l
+					continue
+				else:
+					feed = m.group(1)
 			
 			if is_move and (not g_mode):
 				print >> sys.stderr,  "ERROR: g_mode (0/1) not detected before coordinates"
@@ -211,19 +218,23 @@ class Compensation :
 							x=old_x + (cur_x-old_x)/nsteps*step
 							y=old_y + (cur_y-old_y)/nsteps*step
 							z=old_z + (cur_z-old_z)/nsteps*step
-							self.out(g_mode,x,y,z,to_mm)
+							self.out(g_mode,x,y,z,conv,feed)
 						print "(done)"
-				self.out(g_mode,cur_x,cur_y,cur_z,to_mm)
+				self.out(g_mode,cur_x,cur_y,cur_z,conv,feed)
 			else:
 				print "g" + g_mode, l, "(no compensation, not all coordinates are known yet)"
 				print >> sys.stderr,  "uncompensated move:", l
 			
-			
+			feed = None
 			old_x,old_y,old_z = cur_x,cur_y,cur_z
 
-	def out(self,g_mode,x,y,z,to_mm):
+	def out(self,g_mode,x,y,z,conv,feed):
 		comp = self.get_comp(x,y)
-		print "g" + g_mode, "x{0:.4f}".format(x/to_mm), "y{0:.4f}".format(y/to_mm), "z{0:.4f}".format((z+comp)/to_mm), "("+str(z/to_mm), "+", str(comp/to_mm)+")"
+		if feed != None:
+			f="f"+feed
+		else:
+			f = ""
+		print "g" + g_mode, f, "x{0:.4f}".format(x/conv), "y{0:.4f}".format(y/conv), "z{0:.4f}".format((z+comp)/conv), "("+str(z/conv), "+", str(comp/conv)+")"
 
 
 	def run(self) :
