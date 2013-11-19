@@ -14,14 +14,12 @@ my notes for linuxcnc settings file
 compensation.py
 ---
 my stab at a preprocessing z compensation
-(?)use the function in scan-function.ngc to create a heights file (filename.txt probably in your home dir)
-then run the script on that and your g-code file
+advantages: correct visualization in AXIS, uses saved intermediate results..
+disadvantages: first moves not adjusted (when not all coordinates were used yet)..watch out..this is really just for compensating a bumpy pcb,
+you must start out above it), for heavy terrain, use the HAL stuff. no support for anything beyond g0/g1.
 
-todo: split long moves, thats where the real-timers, hal-gamers are better (well and super-sexily copying surfaces while jogging):
-	xstep=self.xcoords[1] - self.xcoords[0]
-	if abs(curx-oldx) > xstep or abs(cury-oldy) > ystep:
-		for x=oldx;x<curx;x+=xstep...
-(dont support anything beyond g0/g1 i guess)
+(?)use the function in scan-function.ngc to create a heights file (filename.txt probably in your home dir) (todo, edit and use scan-surface.ngc instead)
+then run the script on that and your g-code file
 
 scan-function.ngc, scan-surface.ngc
 ---
@@ -52,7 +50,6 @@ https://github.com/cnc-club/linuxcnc-engraving-comp
 -
 a component too, but in python. adds some buttons into AXIS
 (i have yet to make this work)
-
 
 
 

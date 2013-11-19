@@ -200,7 +200,21 @@ class Compensation :
 			
 			
 			if cur_x != None and cur_y != None and cur_z != None:
-			
+				#if this splitting thing is a fuckup, just change it to how it was in the previous commit, just erorring out.
+				#otherwise unduplicate the duplicate code here
+				if old_x != None and old_y != None and old_z != None:
+					if (abs(old_x-cur_x) > self.xstep) or (abs(old_y-cur_y) > self.ystep):
+						print "(splitting long move, xstep is",self.xstep, ", ystep is", self.ystep,")"
+						nsteps = int(0.5+max(abs(old_x-cur_x)/self.xstep,abs(old_y-cur_y)/self.ystep))
+						for step in range(1,int(nsteps)):
+							print "(step", step,")"
+							x=old_x + (cur_x-old_x)/nsteps*step
+							y=old_y + (cur_y-old_y)/nsteps*step
+							z=old_z + (cur_z-old_z)/nsteps*step
+							comp = self.get_comp(x,y)
+							new_z = z + comp
+							print "g" + g_mode, "x{0:.4f}".format(x), "y{0:.4f}".format(y), "z{0:.4f}".format(new_z), "("+str(z), "+", str(comp)+")"
+						print "(done)"
 				comp = self.get_comp(cur_x,cur_y)
 				new_z = cur_z + comp
 				print "g" + g_mode, "x{0:.4f}".format(cur_x), "y{0:.4f}".format(cur_y), "z{0:.4f}".format(new_z), "("+str(cur_z), "+", str(comp)+")"
@@ -208,10 +222,6 @@ class Compensation :
 				print "g" + g_mode, l, "(no compensation, not all coordinates are known yet)"
 #				print >> sys.stderr,  "uncompensated move:", l
 			
-			if old_x != None and old_y != None and old_z != None:
-				if (abs(old_x-cur_x) > self.xstep) or(abs(old_y-cur_y) > self.ystep):
-					print >> sys.stderr,  "we should add splitting of long moves, this can't end well"
-					sys.exit(0)
 			
 			old_x,old_y,old_z = cur_x,cur_y,cur_z
 
