@@ -2,18 +2,18 @@ M64 P0  (turn off compensation)
 T1 M6 (Install probe)
 
 ;;modify here
-#<h> = 90 
-#<w> = 90 
+#<w> = 55 
+#<h> = 80 
 #<x0> = 0 ;offsets
 #<y0> = 0
 #<step> = 20
-#<search_feed> = 100
+#<search_feed> = 20
 #<latch_feed> = 1
 #<safe_z> = 3
-#<search_z> = -3
+#<search_z> = -0.3
 ;;
 
-(PROBEOPEN filename.txt)
+(PROBEOPEN hmm.txt)
 G0 Z#<safe_z>
 #<y> = #<y0>
 o101 while [#<y> LT #<h>+#<y0>]

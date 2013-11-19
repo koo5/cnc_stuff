@@ -15,11 +15,11 @@
 ; #<safe_z> = 3
 ; #<search_z> = -3
 ;
-; o<scan-surface> call [#<x0>] [#<y0>] [#<h>] [#<w>] [#<step>] [#<search_feed>] [#<latch_feed>] [#<safe_z>] [#<search_z>]
+; o<probez> call [#<x0>] [#<y0>] [#<h>] [#<w>] [#<step>] [#<search_feed>] [#<latch_feed>] [#<safe_z>] [#<search_z>]
 ;
 
 
-o<scan-surface> sub
+o<probez> sub
 	M64 P0  (turn off compensation)
 	T1 M6 (Install probe)
 	#<x0> = #1
@@ -51,7 +51,6 @@ o<scan-surface> sub
 	o101 endwhile
 
 	(PROBECLOSE)
-o<scan-surface> endsub
+o<probez> endsub
 M2 (Program end)
-
 

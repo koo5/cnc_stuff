@@ -160,12 +160,12 @@ class Compensation :
 				tmp_mode = m.group(1)
 				if re.match('^0*20$', tmp_mode):
 					unit = "inch"
-					conversion_to_mm = mmsininch
+					to_mm = 1/mmsininch
 					print l
 					continue
 				elif re.match('^0*21$', tmp_mode):
 					unit = "mm"
-					conversion_to_mm = 1
+					to_mm = 1
 					print l
 					continue
 			
@@ -177,15 +177,15 @@ class Compensation :
 			m = re.match('.*[xX]\s*(-?\d+(\.\d+)?)', l)
 			if m:
 				is_move = 1
-				cur_x = float(m.group(1))*conversion_to_mm
+				cur_x = float(m.group(1))*to_mm
 			m = re.match('.*[yY]\s*(-?\d+(\.\d+)?)', l)
 			if m:
 				is_move = 1
-				cur_y = float(m.group(1))*conversion_to_mm
+				cur_y = float(m.group(1))*to_mm
 			m = re.match('.*[zZ]\s*(-?\d+(\.\d+)?)', l)
 			if m:
 				is_move = 1
-				cur_z = float(m.group(1))*conversion_to_mm
+				cur_z = float(m.group(1))*to_mm
 			
 			if is_move and (not g_mode):
 				print >> sys.stderr,  "ERROR: g_mode (0/1) not detected before coordinates"
@@ -211,19 +211,19 @@ class Compensation :
 							x=old_x + (cur_x-old_x)/nsteps*step
 							y=old_y + (cur_y-old_y)/nsteps*step
 							z=old_z + (cur_z-old_z)/nsteps*step
-							comp = self.get_comp(x,y)
-							new_z = z + comp
-							print "g" + g_mode, "x{0:.4f}".format(x), "y{0:.4f}".format(y), "z{0:.4f}".format(new_z), "("+str(z), "+", str(comp)+")"
+							self.out(g_mode,x,y,z,to_mm)
 						print "(done)"
-				comp = self.get_comp(cur_x,cur_y)
-				new_z = cur_z + comp
-				print "g" + g_mode, "x{0:.4f}".format(cur_x), "y{0:.4f}".format(cur_y), "z{0:.4f}".format(new_z), "("+str(cur_z), "+", str(comp)+")"
+				self.out(g_mode,cur_x,cur_y,cur_z,to_mm)
 			else:
 				print "g" + g_mode, l, "(no compensation, not all coordinates are known yet)"
-#				print >> sys.stderr,  "uncompensated move:", l
+				print >> sys.stderr,  "uncompensated move:", l
 			
 			
 			old_x,old_y,old_z = cur_x,cur_y,cur_z
+
+	def out(self,g_mode,x,y,z,to_mm):
+		comp = self.get_comp(x,y)
+		print "g" + g_mode, "x{0:.4f}".format(x/to_mm), "y{0:.4f}".format(y/to_mm), "z{0:.4f}".format((z+comp)/to_mm), "("+str(z/to_mm), "+", str(comp/to_mm)+")"
 
 
 	def run(self) :
