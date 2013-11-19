@@ -92,6 +92,8 @@ class Compensation :
 		self.range_x = range(self.len_x)
 		self.len_y = len(self.y_coords)
 		self.range_y = range(self.len_y)
+		self.xstep = self.x_coords[1] - self.x_coords[0]
+		self.ystep = self.y_coords[1] - self.y_coords[0]
 
 	def get_comp(self,x,y) :
 			x = max(self.x_coords[0],min(self.x_coords[-1],x))
@@ -139,7 +141,7 @@ class Compensation :
 	def parse_and_spit_gfile(self):
 		gf = open( self.gfile, "r" )
 		x_pnt, y_pnt  = {}, {}
-		cur_x = cur_y = cur_z =x=y=z = None
+		cur_x=cur_y=cur_z=old_x=old_y=old_z=x=y=z = None
 		unit = "dunno"
 		g_mode = ""
 		for line in gf:
@@ -158,10 +160,12 @@ class Compensation :
 				tmp_mode = m.group(1)
 				if re.match('^0*20$', tmp_mode):
 					unit = "inch"
+					conversion_to_mm = mmsininch
 					print l
 					continue
 				elif re.match('^0*21$', tmp_mode):
 					unit = "mm"
+					conversion_to_mm = 1
 					print l
 					continue
 			
@@ -173,15 +177,15 @@ class Compensation :
 			m = re.match('.*[xX]\s*(-?\d+(\.\d+)?)', l)
 			if m:
 				is_move = 1
-				cur_x = float(m.group(1))
+				cur_x = float(m.group(1))*conversion_to_mm
 			m = re.match('.*[yY]\s*(-?\d+(\.\d+)?)', l)
 			if m:
 				is_move = 1
-				cur_y = float(m.group(1))
+				cur_y = float(m.group(1))*conversion_to_mm
 			m = re.match('.*[zZ]\s*(-?\d+(\.\d+)?)', l)
 			if m:
 				is_move = 1
-				cur_z = float(m.group(1))
+				cur_z = float(m.group(1))*conversion_to_mm
 			
 			if is_move and (not g_mode):
 				print >> sys.stderr,  "ERROR: g_mode (0/1) not detected before coordinates"
@@ -194,21 +198,22 @@ class Compensation :
 				print l
 				continue
 			
-			if unit == "inch":
-				if cur_x: x = cur_x * mmsininch
-				if cur_y: y = cur_y * mmsininch
-				if cur_z: z = cur_z * mmsininch
-			elif unit == "mm":
-				x,y,z = cur_x,cur_y,cur_z
 			
-			if x != None and y != None and z != None:
-				comp = self.get_comp(x,y)
-				new_z = z + comp
-				print "g" + g_mode, "x{0:.4f}".format(x), "y{0:.4f}".format(y), "z{0:.4f}".format(new_z), "("+str(z), "+", str(comp)+")"
+			if cur_x != None and cur_y != None and cur_z != None:
+			
+				comp = self.get_comp(cur_x,cur_y)
+				new_z = cur_z + comp
+				print "g" + g_mode, "x{0:.4f}".format(cur_x), "y{0:.4f}".format(cur_y), "z{0:.4f}".format(new_z), "("+str(cur_z), "+", str(comp)+")"
 			else:
-				print "g" + g_mode, l, "(z not compensated, not all coordinates are known)"
+				print "g" + g_mode, l, "(no compensation, not all coordinates are known yet)"
 #				print >> sys.stderr,  "uncompensated move:", l
-
+			
+			if old_x != None and old_y != None and old_z != None:
+				if (abs(old_x-cur_x) > self.xstep) or(abs(old_y-cur_y) > self.ystep):
+					print >> sys.stderr,  "we should add splitting of long moves, this can't end well"
+					sys.exit(0)
+			
+			old_x,old_y,old_z = cur_x,cur_y,cur_z
 
 
 	def run(self) :
