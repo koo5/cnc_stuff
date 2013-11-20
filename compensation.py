@@ -68,6 +68,13 @@ class Compensation :
 					self.print_map()
 					sys.exit()
 
+	def max(self):
+		max = None
+		for y in self.y_coords :
+			for x in self.x_coords :
+				if self.comp[x] > max:
+					max = self.comp
+		return max
 
                                 	
 	def load_zfile(self) :
