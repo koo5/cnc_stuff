@@ -92,17 +92,22 @@ class Compensation :
 		self.range_x = range(self.len_x)
 		self.len_y = len(self.y_coords)
 		self.range_y = range(self.len_y)
-		self.xstep = self.x_coords[1] - self.x_coords[0]
-		self.ystep = self.y_coords[1] - self.y_coords[0]
+		
+		#find the smallest length that two columns/rows are distant by
+		self.xstep = min([(self.x_coords[x+1] - self.x_coords[x]) for x in range(len(self.x_coords)-1)])
+		self.ystep = min([(self.y_coords[x+1] - self.y_coords[x]) for x in range(len(self.y_coords)-1)])
 
 	def get_comp(self,x,y) :
+	
+			#clamp the point to the coords grid
 			x = max(self.x_coords[0],min(self.x_coords[-1],x))
 			y = max(self.y_coords[0],min(self.y_coords[-1],y))
+			
+			#find x2,y2, the nearest point on the grid right/down of the point
 			i = 0
 			while i<self.len_x :
 				if self.x_coords[i]>x : break
 				i+=1
-								
 			j = 0
 			while j<self.len_y :
 				if self.y_coords[j]>y : break
@@ -110,10 +115,12 @@ class Compensation :
 		
 			if i==self.len_x : i -= 1 
 			if j==self.len_y : j -= 1 
+		
 			x2=self.x_coords[i]
 			y2=self.y_coords[j]
 						
 
+			#get x1,y1
 			if i<self.len_x:
 				x1 = self.x_coords[max(0,i-1)]
 			else:
@@ -123,7 +130,6 @@ class Compensation :
 				y1 = self.y_coords[max(0,j-1)]
 			else:
 				y1 = y2	
-
 
 			# now make bilinear interpolation of the points 
 			if x1 != x2 :
@@ -138,7 +144,7 @@ class Compensation :
 			#print x2,y2,z1
 			return z1	
 	
-	def parse_and_spit_gfile(self):
+	def parse_and_spit_gfile_uglyfunc(self):
 		gf = open( self.gfile, "r" )
 		x_pnt, y_pnt  = {}, {}
 		cur_x=cur_y=cur_z=old_x=old_y=old_z=x=y=z = None
@@ -239,7 +245,8 @@ class Compensation :
 
 	def run(self) :
 		self.load_zfile()
-		self.parse_and_spit_gfile()
+		self.parse_and_spit_gfile_uglyfunc()
+		self.print_map()
 
 
 
