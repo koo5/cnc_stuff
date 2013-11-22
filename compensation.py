@@ -186,8 +186,6 @@ class Compensation :
 			m = re.match('^\s*[gG]\s*(0*[01])[^\d](.*)', l)
 			if m:
 				g_mode = m.group(1)
-#				print "(",l,")"
-				l = m.group(2)
 			m = re.match('.*[xX]\s*(-?\d+(\.\d+)?)', l)
 			if m:
 				is_move = 1
@@ -226,21 +224,23 @@ class Compensation :
 			#dont worry about splitting, initial moves are offset by max() anyway
 			nsteps = 1
 		else:
-			nsteps = round(0.5+max(abs(old_x-x)/self.xstep,abs(old_y-y)/self.ystep))
+			nsteps = int(round(0.5+max(abs(old_x-x)/self.xstep,abs(old_y-y)/self.ystep)))
 			#1 or more than 1
 		
-		if nsteps > 1:
-			print "(splitting long move, xstep is",self.xstep, ", ystep is", self.ystep, ", nsteps is ", nsteps,")"
-		for step in range(nsteps,0,-1):
-#			print "(step", step,")"
+		X,Y,Z=x,y,z
+		
+		for step in range(1, nsteps+1):
+			if step == 2:
+				l = "(splitting long move, xstep is "+str(self.xstep)+"+ ystep is "+str(self.ystep)+", nsteps is "+str( nsteps)+")"
+			if step > 2:
+				l = "(step"+str(step)+")"
 			if old_x != None:
-				x=old_x + (x-old_x)/nsteps*step
+				X=old_x + (x-old_x)/nsteps*step
 			if old_y != None:
-				y=old_y + (y-old_y)/nsteps*step
+				Y=old_y + (y-old_y)/nsteps*step
 			if old_z != None:
-				z=old_z + (z-old_z)/nsteps*step
-			self.out(g_mode,x,y,z,conv,feed,l)
-#		print "(done)"
+				Z=old_z + (z-old_z)/nsteps*step
+			self.out(g_mode,X,Y,Z,conv,feed,l)
 	
 
 	def out(self,g_mode,x,y,z,unit_conv,feed,l):
@@ -248,7 +248,14 @@ class Compensation :
 			comp = self.get_comp(x,y)
 		else:
 			comp = self.max()
-		print "g" + g_mode,"f" + feed if feed != None else "","x{0:.4f}".format(x/unit_conv) if x != None else "","y{0:.4f}".format(y/unit_conv) if y != None else "","z{0:.4f}".format((z + comp)/unit_conv) if z != None else "","(",l,")","("+str(z/unit_conv), "+", str(comp/unit_conv)+")"
+		print "g" + g_mode,\
+			"f" + feed if feed != None else "",\
+			"x{0:.5f}".format(x/unit_conv) if x != None else "",\
+			"y{0:.5f}".format(y/unit_conv) if y != None else "",\
+			"z{0:.5f}".format((z + comp)/unit_conv) if z != None else "",\
+			"("+str(z/unit_conv)+"{0:+.5f}".format(comp/unit_conv,5)+")" if z != None else "",\
+			";",l
+			
 
 	def run(self) :
 		self.load_zfile()
