@@ -73,7 +73,7 @@ class Compensation :
 		for y in self.y_coords :
 			for x in self.x_coords :
 				if self.comp[x] > max:
-					max = self.comp
+					max = self.comp[x][y]
 		return max
 
                                 	
@@ -157,6 +157,7 @@ class Compensation :
 		cur_x=cur_y=cur_z=old_x=old_y=old_z=x=y=z = None
 		unit = "dunno"
 		g_mode = ""
+		feed = None
 		for line in gf:
 			is_move = 0
 			l = line.rstrip('\n')
@@ -185,8 +186,8 @@ class Compensation :
 			m = re.match('^\s*[gG]\s*(0*[01])[^\d](.*)', l)
 			if m:
 				g_mode = m.group(1)
+#				print "(",l,")"
 				l = m.group(2)
-#				print "( g_mode now", g_mode, ")"
 			m = re.match('.*[xX]\s*(-?\d+(\.\d+)?)', l)
 			if m:
 				is_move = 1
@@ -201,11 +202,7 @@ class Compensation :
 				cur_z = float(m.group(1))*conv
 			m = re.match('.*[fF]\s*(-?\d+(\.\d+)?)', l)
 			if m:
-				if not is_move:
-					print l
-					continue
-				else:
-					feed = m.group(1)
+				feed = m.group(1)
 			
 			if is_move and (not g_mode):
 				print >> sys.stderr,  "ERROR: g_mode (0/1) not detected before coordinates"
@@ -218,37 +215,40 @@ class Compensation :
 				print l
 				continue
 			
-			
-			if cur_x != None and cur_y != None and cur_z != None:
-				#if this splitting thing is a fuckup, just change it to how it was in the previous commit, just erorring out.
-				#otherwise unduplicate the duplicate code here
-				if old_x != None and old_y != None and old_z != None:
-					if (abs(old_x-cur_x) > self.xstep) or (abs(old_y-cur_y) > self.ystep):
-						print "(splitting long move, xstep is",self.xstep, ", ystep is", self.ystep,")"
-						nsteps = int(0.5+max(abs(old_x-cur_x)/self.xstep,abs(old_y-cur_y)/self.ystep))
-						for step in range(1,int(nsteps)):
-							print "(step", step,")"
-							x=old_x + (cur_x-old_x)/nsteps*step
-							y=old_y + (cur_y-old_y)/nsteps*step
-							z=old_z + (cur_z-old_z)/nsteps*step
-							self.out(g_mode,x,y,z,conv,feed)
-						print "(done)"
-				self.out(g_mode,cur_x,cur_y,cur_z,conv,feed)
-			else:
-				print "g" + g_mode, l, "(no compensation, not all coordinates are known yet)"
-				print >> sys.stderr,  "uncompensated move:", l
+			self.split_and_interpolate(g_mode,cur_x,cur_y,cur_z,old_x,old_y,old_z,conv,feed,l)
 			
 			feed = None
 			old_x,old_y,old_z = cur_x,cur_y,cur_z
 
-	def out(self,g_mode,x,y,z,conv,feed):
-		comp = self.get_comp(x,y)
-		if feed != None:
-			f="f"+feed
+	def split_and_interpolate(self,g_mode,x,y,z,old_x,old_y,old_z,conv,feed,l):
+		
+		if old_x == None or old_y == None:
+			#dont worry about splitting, initial moves are offset by max() anyway
+			nsteps = 1
 		else:
-			f = ""
-		print "g" + g_mode, f, "x{0:.4f}".format(x/conv), "y{0:.4f}".format(y/conv), "z{0:.4f}".format((z+comp)/conv), "("+str(z/conv), "+", str(comp/conv)+")"
+			nsteps = round(0.5+max(abs(old_x-x)/self.xstep,abs(old_y-y)/self.ystep))
+			#1 or more than 1
+		
+		if nsteps > 1:
+			print "(splitting long move, xstep is",self.xstep, ", ystep is", self.ystep, ", nsteps is ", nsteps,")"
+		for step in range(nsteps,0,-1):
+#			print "(step", step,")"
+			if old_x != None:
+				x=old_x + (x-old_x)/nsteps*step
+			if old_y != None:
+				y=old_y + (y-old_y)/nsteps*step
+			if old_z != None:
+				z=old_z + (z-old_z)/nsteps*step
+			self.out(g_mode,x,y,z,conv,feed,l)
+#		print "(done)"
+	
 
+	def out(self,g_mode,x,y,z,unit_conv,feed,l):
+		if x != None and y != None:
+			comp = self.get_comp(x,y)
+		else:
+			comp = self.max()
+		print "g" + g_mode,"f" + feed if feed != None else "","x{0:.4f}".format(x/unit_conv) if x != None else "","y{0:.4f}".format(y/unit_conv) if y != None else "","z{0:.4f}".format((z + comp)/unit_conv) if z != None else "","(",l,")","("+str(z/unit_conv), "+", str(comp/unit_conv)+")"
 
 	def run(self) :
 		self.load_zfile()
