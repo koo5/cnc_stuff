@@ -45,12 +45,14 @@ http://wiki.linuxcnc.org/cgi-bin/wiki.pl?ProbeKins
 -
 a linuxcnc kinematic module, must be compiled. includes nice utilities for visualization..could be used separately, (on the linuxcnc probe output file)
 converts heightmap into triangles...probably smart, but comes with a warning about a bug where coordinates fall through between triangles:-)
-(i have yet to try this out)
+(instructions)
+after cloning the repo, check out the branch probekins
+if you get crap from probe2stl.py, check out bd5aa8f27e6ab3a0d0a4d407252d18bbc0537e4e
 
 https://github.com/cnc-club/linuxcnc-engraving-comp
 -
 a component too, but in python. adds some buttons into AXIS
-(i have yet to make this work)
+(i have yet to make this work) (see my fork)
 
 
 
