@@ -26,7 +26,7 @@ scan-function.ngc, scan-surface.ngc
 ---
 same things, -function should allow you to load it, then call it interactively.
 both files are from https://github.com/cnc-club/linuxcnc-engraving-comp
-
+todo add max found height to safe distance
 
 what else is there for height compensation
 ===

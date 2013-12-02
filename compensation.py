@@ -231,7 +231,7 @@ class Compensation :
 		
 		for step in range(1, nsteps+1):
 			if step == 2:
-				l = "(splitting long move, xstep is "+str(self.xstep)+"+ ystep is "+str(self.ystep)+", nsteps is "+str( nsteps)+")"
+				l = "(splitting long move, xstep is "+str(self.xstep)+" ystep is "+str(self.ystep)+", nsteps is "+str( nsteps)+")"
 			if step > 2:
 				l = "(step"+str(step)+")"
 			if old_x != None:
