@@ -1,29 +1,40 @@
-M64 P0  (turn off compensation)
-T1 M6 (Install probe)
-
-;;modify here
-#<w> = 55 
-#<h> = 80 
+(PROBEOPEN pintest1.txt)
+#<w> = 25 
+#<h> = 5
 #<x0> = 0 ;offsets
 #<y0> = 0
-#<step> = 20
-#<search_feed> = 20
-#<latch_feed> = 1
-#<safe_z> = 3
-#<search_z> = -0.3
-;;
+#<step> = 2.5
+#<search_feed> = 5
+#<latch_feed> = 0.2
+#<safe_z> = 0.7
+#<search_z> = -0.5
 
-(PROBEOPEN hmm.txt)
+
+M64 P0  (turn off compensation)
+T1 M6 (Install probe)
+G94     ( units per minute feed rate. )
+G21     ( Units == mm             )
+G90     ( Absolute coordinates.        )
+
+
+#<max_found_z> = 0
 G0 Z#<safe_z>
 #<y> = #<y0>
-o101 while [#<y> LT #<h>+#<y0>]
+o101 while [#<y> LE #<h>+#<y0>]
 #<x> = #<x0>
-o102 while [#<x> LT #<w>+#<x0>]
+o102 while [#<x> LE #<w>+#<x0>]
   G0 X#<x> Y#<y> 
   F[#<search_feed>]
   G38.3 Z[#<search_z>]
   F[#<latch_feed>]
   G38.5 Z[#<safe_z>]
+
+  o103 if [#<5063> GT #<max_found_z>]
+    ;if probe result is greater than max found Z
+    #<max_found_z> = <#5063>
+    (MSG, <#max_found_z>)
+  o103 endif
+
 G0 Z#<safe_z> 
 #<x> = [#<x>+#<step>]
 o102 endwhile
@@ -31,4 +42,7 @@ o102 endwhile
 o101 endwhile
 (PROBECLOSE)
 M2 (Program end)
+
+
+
 
