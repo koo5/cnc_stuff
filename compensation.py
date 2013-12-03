@@ -1,44 +1,20 @@
-#!/usr/bin/env python
-"""
-hacked together from:
-https://github.com/abetusk/abes_cnc_utilities/blob/master/scri.py
-and:
-https://github.com/cnc-club/linuxcnc-engraving-comp/blob/master/compensation.py
-
-(Copyright (C) 2009 Nick Drobchenko, nick@cnc-club.ru)
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-"""
-
-
 import sys,re
 
 mmsininch = 25.4
 
 class Compensation :
-	def __init__(self) :
+	def __init__(self, gfile, zfile) :
 		self.comp = {}
 		self.x_coords = []
 		self.y_coords = []
-		if len(sys.argv)<3:
-			print >> sys.stderr, "usage: compensation.py gcode.ngc heights.txt"
-			sys.exit()
 
 		self.range_x,self.range_y, self.len_x,self.len_y = [],[], 0,0 
 
-		self.gfile = sys.argv[1]
-		self.zfile = sys.argv[2]
+		self.gfile = gfile
+		self.zfile = zfile
+
+		self.load_zfile()
+
 
 	#omg, somebody cut this out, my only excuse is that i am a programming flowerpot
 	def print_map(self):
@@ -258,11 +234,7 @@ class Compensation :
 			
 
 	def run(self) :
-		self.load_zfile()
 		self.parse_and_spit_gfile_uglyfunc()
 		self.print_map()
 
 
-
-comp = Compensation()
-comp.run()
