@@ -43,11 +43,18 @@ realtime in HAL
 this should let you copy the surface while jogging. again will make things look as flat though
 http://wiki.linuxcnc.org/cgi-bin/wiki.pl?ProbeKins
 -
-a linuxcnc kinematic module, must be compiled. includes nice utilities for visualization..could be used separately, (on the linuxcnc probe output file)
-converts heightmap into triangles...probably smart, but comes with a warning about a bug where coordinates fall through between triangles:-)
-(instructions)
-after cloning the repo, check out the branch probekins
-if you get crap from probe2stl.py, check out bd5aa8f27e6ab3a0d0a4d407252d18bbc0537e4e
+a linuxcnc kinematic module, must be compiled. probably smart, but comes with a warning about a bug where coordinates fall through between triangles:-)
+
+includes nice utilities for visualization..can be used separately:
+git clone git://git.mah.priv.at/emc2-dev.git
+cd emc2-dev
+git checkout probekins
+cd src/emc/kinematics
+#if you get crap from probe2stl.py, remove odd lines (the ones that are output when probe goes down):
+awk 'NR%2==0' heights.txt | ./probe2stl.py  > stl.stl
+#or checkout bd5aa8f27e6ab3a0d0a4d407252d18bbc0537e4e, this old version will just output a warning
+python stlvis.py stl.stl
+
 
 https://github.com/cnc-club/linuxcnc-engraving-comp
 -
