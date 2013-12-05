@@ -1,13 +1,13 @@
 (PROBEOPEN pintest1.txt)
-#<w> = 25 
-#<h> = 5
+#<w> = 70 
+#<h> = 55
 #<x0> = 0 ;offsets
 #<y0> = 0
 #<step> = 2.5
 #<search_feed> = 5
 #<latch_feed> = 0.2
-#<safe_z> = 0.7
-#<search_z> = -0.5
+#<safe_z> = 0.1
+#<search_z> = -0.3
 
 
 M64 P0  (turn off compensation)
@@ -27,16 +27,16 @@ o102 while [#<x> LE #<w>+#<x0>]
   F[#<search_feed>]
   G38.3 Z[#<search_z>]
   F[#<latch_feed>]
-  G38.5 Z[#<safe_z>]
+  G38.5 Z[#<safe_z> + #<max_found_z>]
 
-  o103 if [#<5063> GT #<max_found_z>]
+  o103 if [#5063 GT #<max_found_z>]
     ;if probe result is greater than max found Z
-    #<max_found_z> = <#5063>
-    (MSG, <#max_found_z>)
+    #<max_found_z> = #5063
+    (debug,#<max_found_z>)
   o103 endif
 
-G0 Z#<safe_z> 
-#<x> = [#<x>+#<step>]
+  G0 Z[#<safe_z> + #<max_found_z>]
+  #<x> = [#<x>+#<step>]
 o102 endwhile
 #<y> = [#<y>+#<step>]
 o101 endwhile
